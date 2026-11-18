@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens ---------- */
+:root {
+  --bg: #f6f1ea;          /* тёплый молочный */
+  --surface: #fffdf9;     /* почти белый */
+  --sand: #ede3d6;        /* песок */
+  --linen: #e4d7c6;       /* лён, границы */
+  --wood: #8a6a4f;        /* древесный */
+  --wood-dark: #5b4636;
+  --ink: #3a2e26;         /* основной текст */
+  --muted: #76675b;       /* вторичный текст, контраст 5:1 на --bg */
+  --olive: #5f6b45;       /* кнопки: приглушённая олива */
+  --olive-soft: #dfe3d0;  /* пастельная олива */
+  --blush: #f1ddd2;       /* пастельный персик */
+  --terracotta: #a5502f;  /* скидки */
+  --night: #2b2620;       /* тёмная панель фото */
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* shadcn-совместимые переменные (используются компонентами из /components/ui) */
+  --background: 36 45% 94%;
+  --foreground: 24 21% 19%;
+  --primary: 27 27% 43%;
+  --secondary: 75 22% 85%;
+  --border: 34 33% 89%;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sand: var(--sand);
+  --color-linen: var(--linen);
+  --color-wood: var(--wood);
+  --color-wood-dark: var(--wood-dark);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-olive: var(--olive);
+  --color-olive-soft: var(--olive-soft);
+  --color-blush: var(--blush);
+  --color-terracotta: var(--terracotta);
+  --color-night: var(--night);
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease-soft: var(--ease-out);
+}
+
+/* ---------- Base / mobile-native baseline ---------- */
+@layer base {
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+}
+@media (min-width: 768px) {
+  body { font-size: 16px; }
+}
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+p { text-wrap: pretty; }
+
+input, textarea, select { font-size: 16px; font-family: inherit; }
+button, a, [role="button"] { touch-action: manipulation; }
+button, [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--wood);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+::selection { background: var(--blush); }
+}
+
+/* ---------- Press feedback ---------- */
+.press {
+  transition: transform 140ms var(--ease-out), background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 200ms ease;
+}
+.press:active { transform: scale(0.97); }
+
+/* ---------- Photo reveal: «выплывает» из фона ---------- */
+.reveal-img {
+  overflow: hidden;
+  background: var(--sand);
+}
+.reveal-img > img {
+  opacity: 0;
+  transform: scale(1.12) translateY(14px);
+  transition: opacity 900ms var(--ease-out), transform 1400ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.reveal-img.is-in > img {
+  opacity: 1;
+  transform: none;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-img > img, .reveal { transform: none !important; transition: opacity 400ms ease; }
+  html { scroll-behavior: auto; }
+}
+
+/* ---------- Branch drawing ---------- */
+.branch-stroke {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: branch-draw 2.6s var(--ease-out) 0.2s forwards;
+}
+.branch-bud {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scale(0.6);
+  animation: bud-in 900ms var(--ease-out) forwards;
+  animation-delay: var(--d, 1.2s);
+}
+@keyframes branch-draw { to { stroke-dashoffset: 0; } }
+@keyframes bud-in { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .branch-stroke { animation: none; stroke-dashoffset: 0; }
+  .branch-bud { animation: none; opacity: 1; transform: none; }
+}
+
+/* ---------- Helpers ---------- */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.snap-row {
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+.snap-row > * { scroll-snap-align: start; }
+
+.paper {
+  background: color-mix(in oklab, var(--surface) 86%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
