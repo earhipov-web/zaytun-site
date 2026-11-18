@@ -7,19 +7,14 @@ type Ctx = { go: (to: To) => void; loading: boolean };
 const TransitionCtx = React.createContext<Ctx>({ go: () => {}, loading: false });
 
 const HOLD = 650; // сколько держим загрузчик перед сменой страницы
+const WITH_LOADER = ["/cart", "/checkout"];
 
 export function TransitionProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const reduce = useReducedMotion();
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
   const timers = React.useRef<number[]>([]);
-
-  // первый заход на сайт
-  React.useEffect(() => {
-    const t = window.setTimeout(() => setLoading(false), reduce ? 200 : 900);
-    return () => window.clearTimeout(t);
-  }, [reduce]);
 
   const go = React.useCallback(
     (to: To) => {
@@ -29,6 +24,14 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         return;
       }
       timers.current.forEach(clearTimeout);
+      // Экран загрузки только перед корзиной и оплатой. Остальные переходы мгновенные,
+      // чтобы было видно, как овал в нижнем меню переезжает к новой иконке.
+      if (!WITH_LOADER.some((p) => target.startsWith(p))) {
+        setLoading(false);
+        navigate(to);
+        window.scrollTo(0, 0);
+        return;
+      }
       setLoading(true);
       const hold = reduce ? 150 : HOLD;
       timers.current = [

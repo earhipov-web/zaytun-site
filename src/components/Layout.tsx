@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useLocation } from "react-router-dom";
-import { Home, Users, Sparkles, ShoppingCart, Phone, Send, MapPin, Clock } from "lucide-react";
+import { Home, Users, Sparkles, ShoppingCart, NotebookPen, Phone, Send, MapPin, Clock, type LucideIcon } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { TLink } from "@/components/transition";
 import { Branch } from "@/components/Branch";
 import { useCart } from "@/store/cart";
@@ -134,35 +135,57 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </footer>
 
       {/* Нижняя навигация на телефоне */}
-      <nav
-        aria-label="Навигация"
-        className="paper fixed inset-x-0 bottom-0 z-40 border-t border-linen/80 pb-[env(safe-area-inset-bottom)] md:hidden"
-      >
-        <div className="grid h-16 grid-cols-5 items-center px-1">
-          {nav.map((n) => (
+      <MobileNav isActive={isActive} />
+    </div>
+  );
+}
+
+const mobileNav: { to: string; match: string[]; label: string; icon: LucideIcon; badge?: boolean }[] = [
+  { to: "/", match: ["/"], label: "Главная", icon: Home },
+  { to: "/masters", match: ["/masters"], label: "Мастера", icon: Users },
+  { to: "/services", match: ["/services"], label: "Услуги", icon: Sparkles },
+  { to: "/cart", match: ["/cart", "/checkout"], label: "Корзина", icon: ShoppingCart, badge: true },
+  { to: "/booking", match: ["/booking"], label: "Запись", icon: NotebookPen },
+];
+
+/** Нижнее меню на телефоне: светло-коричневый овал переезжает за активной иконкой */
+function MobileNav({ isActive }: { isActive: (to: string) => boolean }) {
+  const reduce = useReducedMotion();
+  return (
+    <nav
+      aria-label="Навигация"
+      className="paper fixed inset-x-0 bottom-0 z-40 border-t border-linen/80 pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      <div className="grid h-16 grid-cols-5 items-center px-1">
+        {mobileNav.map((n) => {
+          const active = n.match.some((m) => isActive(m));
+          return (
             <TLink
               key={n.to}
               to={n.to}
-              aria-current={isActive(n.to) ? "page" : undefined}
-              className={cn("flex flex-col items-center gap-1 py-1 text-[11px] font-medium text-muted", isActive(n.to) && "text-wood-dark")}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex flex-col items-center gap-1 py-1 text-[11px] font-medium text-muted transition-colors duration-200",
+                active && "text-wood-dark",
+              )}
             >
-              <n.icon className={cn("size-[21px]", isActive(n.to) && "text-wood")} strokeWidth={isActive(n.to) ? 2.2 : 1.8} />
-              {n.short ?? n.label}
+              <span className="relative grid h-8 w-14 place-items-center">
+                {active && (
+                  <motion.span
+                    layoutId="mobile-nav-pill"
+                    className="absolute inset-0 rounded-full bg-[#e8d9c6]"
+                    transition={reduce ? { duration: 0 } : { type: "spring", duration: 0.5, bounce: 0.18 }}
+                  />
+                )}
+                <n.icon className={cn("relative size-[21px] transition-colors duration-200", active && "text-wood-dark")} strokeWidth={active ? 2.1 : 1.8} />
+                {n.badge && <CartBadge className="right-1.5 top-0" />}
+              </span>
+              {n.label}
             </TLink>
-          ))}
-          <TLink to="/cart" className={cn("flex flex-col items-center gap-1 py-1 text-[11px] font-medium text-muted", isActive("/cart") && "text-wood-dark")}>
-            <span className="relative">
-              <ShoppingCart className="size-[21px]" strokeWidth={1.8} />
-              <CartBadge />
-            </span>
-            Корзина
-          </TLink>
-          <TLink to="/booking" className="press mx-1 flex h-11 items-center justify-center rounded-full bg-olive text-[13px] font-semibold text-white">
-            Запись
-          </TLink>
-        </div>
-      </nav>
-    </div>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 

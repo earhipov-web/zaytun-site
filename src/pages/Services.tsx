@@ -3,7 +3,7 @@ import { Check, Plus, CalendarHeart, Send } from "lucide-react";
 import { PageHead } from "@/components/Layout";
 import { Reveal, RevealImage } from "@/components/Reveal";
 import { usePageTransition } from "@/components/transition";
-import { serviceGroups, tgLink, type Service } from "@/data/site";
+import { serviceGroups, promoServiceGroup, tgLink, type Service } from "@/data/site";
 import { useCart } from "@/store/cart";
 import { cn, rub } from "@/lib/utils";
 
@@ -13,9 +13,10 @@ function ServiceRow({ s }: { s: Service }) {
   const [added, setAdded] = React.useState(false);
 
   const onClick = () => {
-    if (s.kind === "massage") return go(`/booking?service=${s.id}`);
+    const id = s.serviceId ?? s.id;
+    if (s.kind === "massage") return go(`/booking?service=${id}`);
     if (s.kind === "telegram") return void window.open(tgLink(`Здравствуйте! Хочу записаться: ${s.title}.`), "_blank", "noopener");
-    add(s.id);
+    add(id, s.serviceId ? { price: s.price, basePrice: s.basePrice, note: s.note } : undefined);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1600);
   };
@@ -26,16 +27,20 @@ function ServiceRow({ s }: { s: Service }) {
         <div className="flex flex-wrap items-baseline gap-x-2.5">
           <h3 className="font-sans text-[15px] font-semibold text-ink md:text-base">{s.title}</h3>
           {s.duration && <span className="text-[13px] text-muted">{s.duration}</span>}
+          {s.badge && (
+            <span className="self-center rounded-full bg-blush px-2 py-0.5 text-[11px] font-semibold text-terracotta">{s.badge}</span>
+          )}
         </div>
         <p className="mt-0.5 text-[13px] leading-snug text-muted md:text-sm">{s.description}</p>
         {s.includes && (
           <p className="mt-1 text-[12px] leading-snug text-wood md:text-[13px]">{s.includes.join(" · ")}</p>
         )}
-        {s.options && s.options.length > 1 && (
+        {!s.badge && s.options && s.options.length > 1 && (
           <p className="mt-1 text-[12px] leading-snug text-wood md:text-[13px]">{s.options.join(" · ")}</p>
         )}
       </div>
       <div className="text-right md:min-w-[96px]">
+        {s.basePrice && s.basePrice > s.price && <s className="block text-[12px] tabular-nums text-muted">{rub(s.basePrice)}</s>}
         <p className="font-semibold tabular-nums text-ink">{s.price ? rub(s.price) : "Бесплатно"}</p>
         {s.priceNote && <p className="text-[11px] leading-tight text-muted">{s.priceNote}</p>}
       </div>
@@ -83,7 +88,7 @@ export function ServicesPage() {
       />
 
       <nav className="no-scrollbar sticky top-14 z-30 mt-3 flex gap-2 overflow-x-auto bg-bg/90 px-4 py-2 backdrop-blur-md md:top-[72px] md:mx-auto md:mt-4 md:max-w-6xl md:bg-transparent md:px-8 md:backdrop-blur-none" aria-label="Разделы прайса">
-        {serviceGroups.map((g) => (
+        {[promoServiceGroup, ...serviceGroups].map((g) => (
           <a
             key={g.id}
             href={`#${g.id}`}
@@ -95,7 +100,7 @@ export function ServicesPage() {
       </nav>
 
       <div className="mx-auto mt-3 max-w-6xl space-y-4 px-4 md:mt-6 md:space-y-6 md:px-8">
-        {serviceGroups.map((g) => (
+        {[promoServiceGroup, ...serviceGroups].map((g) => (
           <Reveal key={g.id} id={g.id} as="section" className="paper scroll-mt-32 overflow-hidden rounded-[24px] border border-linen/80 md:grid md:grid-cols-[260px_1fr]">
             <div className="flex gap-3 p-4 md:block md:p-6">
               <RevealImage src={g.image} alt="" className="aspect-square w-[88px] shrink-0 rounded-[16px] md:aspect-[4/5] md:w-full md:rounded-[18px]" />

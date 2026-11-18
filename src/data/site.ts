@@ -42,6 +42,11 @@ export type Service = {
   /** варианты техники или зоны для массажа */
   options?: string[];
   image?: string;
+  /** для акций: на какую услугу ссылается, цена без скидки, плашка и пометка в корзине */
+  serviceId?: string;
+  basePrice?: number;
+  badge?: string;
+  note?: string;
 };
 
 export type ServiceGroup = {
@@ -675,6 +680,32 @@ export const events: Event[] = [
     signup: "Здравствуйте! Хочу забронировать девичник «Фитнес + SPA».",
   },
 ];
+
+/** Раздел «Акции» на странице услуг: те же акции, что на главной, в формате прайса */
+export const promoServiceGroup: ServiceGroup = {
+  id: "promos",
+  title: "Акции",
+  lead: "Предложения из Telegram-канала студии. Сроки уточняйте у администратора.",
+  image: "/img/tg/sauna-guest.webp",
+  items: promos.map((p) => {
+    const base = findService(p.serviceId);
+    return {
+      id: `promo-${p.id}`,
+      title: p.title,
+      duration: p.duration,
+      price: p.price,
+      basePrice: p.oldPrice,
+      priceNote: p.when,
+      description: p.subtitle,
+      includes: p.bullets,
+      kind: base?.kind ?? "cart",
+      options: base?.options,
+      serviceId: p.serviceId,
+      badge: p.badge,
+      note: `по акции: ${p.badge}`,
+    } satisfies Service;
+  }),
+};
 
 export const gallery = [
   { src: "/img/lobby.webp", alt: "Холл студии с оливковым деревом" },
