@@ -132,6 +132,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <a href={contacts.yandex} target="_blank" rel="noreferrer" className="hover:text-wood">Мы на Яндекс Картах</a>
           </div>
         </div>
+        <div className="border-t border-linen/80">
+          <p className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4 py-4 text-center text-[12px] text-muted md:justify-start md:px-8">
+            <span>Made by @bbluora</span>
+            <span aria-hidden className="text-linen">·</span>
+            <span>
+              GitHub:{" "}
+              <a href="https://github.com/earhipov-web" target="_blank" rel="noreferrer" className="font-medium text-wood underline decoration-wood/30 underline-offset-4 hover:decoration-wood">
+                earhipov-web
+              </a>
+            </span>
+          </p>
+        </div>
       </footer>
 
       {/* Нижняя навигация на телефоне */}
